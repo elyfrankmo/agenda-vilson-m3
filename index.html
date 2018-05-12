@@ -103,7 +103,7 @@
             months: [
                 'Janeiro',
                 'Fevereiro',
-                'Março',
+                'MarÃ§o',
                 'Abril',
                 'Maio',
                 'Junho',
@@ -117,11 +117,11 @@
             days:[
                 'Domingo',
                 'Segunda',
-                'Terça',
+                'TerÃ§a',
                 'Quarta',
                 'Quinta',
                 'Sexta',
-                'Sábado'
+                'SÃ¡bado'
             ],
             daysShort:[
                 'Dom',
@@ -130,19 +130,19 @@
                 'Qua',
                 'Qui',
                 'Sex',
-                'Sáb'
+                'SÃ¡b'
             ]
         }
 
         this.render = function(date){
             this.date = date;
 
-            // Definindo o título do calendário
+            // Definindo o tÃ­tulo do calendÃ¡rio
             var title = this.translate.months[this.date.getMonth()];
             title += ' / ' + this.date.getFullYear();
             this.table.querySelector('.calendar-current-month').innerHTML = title;
 
-            // Dia que começa o calendário
+            // Dia que comeÃ§a o calendÃ¡rio
             var day = this.getFirstDate();
 
             // Limpando o calendario
@@ -179,7 +179,7 @@
         this.getFirstDate = function(){
             var timezone = 3;
 
-            // Dia que começa o calendário
+            // Dia que comeÃ§a o calendÃ¡rio
             var calendar = new Date(this.date.getFullYear(),this.date.getMonth(), 1, timezone, 0, 0);
             var diff = calendar.getDay() - 1;
             calendar.setDate(-diff);
@@ -197,11 +197,11 @@
 
             date = new Date(date.getFullYear(),date.getMonth(),date.getDate(),timezone,0,0,0);
 
-            // Diferença em dias
+            // DiferenÃ§a em dias
             var diff = Math.round((date - this.getFirstDate()) / (1000 * 3600 * 24));
 
             if(diff > 34 || diff < 0){
-                return false; // A data não pertence ao mês corrente
+                return false; // A data nÃ£o pertence ao mÃªs corrente
             }else{
                 var week, day;
                 if(diff <= 6){
@@ -336,7 +336,7 @@
 
             let day = event.target;
             let date = new Date(day.dataset.date * 1000);
-            let title = prompt('Qual é o evento?', day.dataset.title || '');
+            let title = prompt('Qual Ã© o evento?', day.dataset.title || '');
 
             if(title === null){
                 return;
