@@ -1,0 +1,401 @@
+<html>
+<body>
+<style media="screen">
+    table.calendar{
+        width: 100%;
+        border: solid 0.5px black;
+        color: #141414;
+
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none;   /* Chrome/Safari/Opera */
+        -khtml-user-select: none;    /* Konqueror */
+        -moz-user-select: none;      /* Firefox */
+        -ms-user-select: none;       /* Internet Explorer/Edge */
+        user-select: none;
+    }
+
+    table.calendar thead > tr > th{
+        text-align: center;
+        padding: 10px;
+        background-color: #ddd;
+    }
+
+    table.calendar thead > tr:first-child > th{
+        background-color: white;
+        text-transform: uppercase;
+    }
+
+    table.calendar thead > tr:first-child > th:first-child,
+    table.calendar thead > tr:first-child > th:last-child{
+        cursor: pointer;
+    }
+
+    table.calendar tbody{
+        border: solid 0.5px black;
+    }
+    table.calendar tbody > tr > td{
+        text-align: center;
+        padding: 10px;
+        border: solid 0.5px #ddd;
+        cursor: pointer;
+        position:relative;
+    }
+    table.calendar tbody > tr:first-child > td{
+        border-top: solid 0.5px black;
+    }
+
+    table.calendar tbody > tr > td.active{
+        background-color: #DDF6E2;
+    }
+
+    table.calendar tbody > tr > td > span{
+        position: absolute;
+        top: -10px;
+        right: -6px;
+        background: red;
+        border-radius: 50%;
+        color: #fff;
+        z-index: 1;
+        display: none;
+        width: 18px;
+        padding: 0px 0px 2px 1px;
+    }
+    table.calendar tbody > tr > td.active:hover > span{
+        display: block;
+    }
+
+
+
+</style>
+
+<table class="calendar">
+    <thead>
+    <tr>
+        <th class="previous-month">
+            <
+        </th>
+        <th class="calendar-current-month" colspan="5"></th>
+        <th class="next-month">
+            >
+        </th>
+    </tr>
+    <tr>
+        <th>Dom</th>
+        <th>Seg</th>
+        <th>Ter</th>
+        <th>Qua</th>
+        <th>Qui</th>
+        <th>Sex</th>
+        <th>Sab</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<script>
+    Calendar = function(){
+
+        // Dias ativos
+        this.actives = new Array();
+
+        this.table = document.querySelector('.calendar');
+
+        this.translate = {
+            months: [
+                'Janeiro',
+                'Fevereiro',
+                'Março',
+                'Abril',
+                'Maio',
+                'Junho',
+                'Julho',
+                'Agosto',
+                'Setembro',
+                'Outubro',
+                'Novembro',
+                'Dezembro'
+            ],
+            days:[
+                'Domingo',
+                'Segunda',
+                'Terça',
+                'Quarta',
+                'Quinta',
+                'Sexta',
+                'Sábado'
+            ],
+            daysShort:[
+                'Dom',
+                'Seg',
+                'Ter',
+                'Qua',
+                'Qui',
+                'Sex',
+                'Sáb'
+            ]
+        }
+
+        this.render = function(date){
+            this.date = date;
+
+            // Definindo o título do calendário
+            var title = this.translate.months[this.date.getMonth()];
+            title += ' / ' + this.date.getFullYear();
+            this.table.querySelector('.calendar-current-month').innerHTML = title;
+
+            // Dia que começa o calendário
+            var day = this.getFirstDate();
+
+            // Limpando o calendario
+            this.table.querySelector("tbody").innerHTML = '';
+
+            // Criando as semanas
+            for(var s = 0; s < 5; s++){
+                var semana = document.createElement('tr');
+
+                // Criando os dias
+                for(var d = 0; d < 7; d++){
+
+                    var dia = document.createElement('td');
+                    dia.dataset.date = day.getTime() / 1000;
+
+                    dia.innerHTML = day.getDate();
+
+                    var span = document.createElement('span');
+                    span.innerHTML = 'x';
+                    dia.appendChild(span);
+
+                    // Acrescentando um dia
+                    day.setDate(day.getDate() + 1);
+
+                    semana.appendChild(dia);
+                }
+
+                this.table.querySelector("tbody").appendChild(semana);
+            }
+
+            // Exibindo os dias ativos
+            this.renderActives()
+        }
+        this.getFirstDate = function(){
+            var timezone = 3;
+
+            // Dia que começa o calendário
+            var calendar = new Date(this.date.getFullYear(),this.date.getMonth(), 1, timezone, 0, 0);
+            var diff = calendar.getDay() - 1;
+            calendar.setDate(-diff);
+
+            return calendar;
+        }
+        this.add = function(date){
+            this.actives.push(date);
+
+            this.activeDate(date);
+        }
+        this.getElement = function(date){
+
+            let timezone = 3;
+
+            date = new Date(date.getFullYear(),date.getMonth(),date.getDate(),timezone,0,0,0);
+
+            // Diferença em dias
+            var diff = Math.round((date - this.getFirstDate()) / (1000 * 3600 * 24));
+
+            if(diff > 34 || diff < 0){
+                return false; // A data não pertence ao mês corrente
+            }else{
+                var week, day;
+                if(diff <= 6){
+                    week = 0;
+                }else if (diff > 6 && diff <= 13) {
+                    week = 1;
+                }else if (diff > 13 && diff <= 20) {
+                    week = 2;
+                }else if (diff > 20 && diff <= 27) {
+                    week = 3;
+                }else if (diff > 27 && diff <= 34) {
+                    week = 4;
+                }
+
+                day = diff - (week * 7);
+
+                return this.table.querySelector('tbody').childNodes[week].childNodes[day];
+            }
+        }
+        this.activeDate = function(date){
+            var element = this.getElement(date);
+            if(element === false){
+                return false;
+            }
+            element.classList.add('active');
+
+            // Adicionando atributos no item
+            if(date.hasOwnProperty('attributes')){
+                Object.keys(date.attributes).forEach(function(key){
+                    element.dataset[key] = date.attributes[key];
+                })
+            }
+        }
+        this.renderActives = function(){
+            this.actives.forEach(date => this.activeDate(date));
+        }
+        this.previousMonth = function(){
+            var previous = this.date;
+            previous.setMonth(previous.getMonth() - 1);
+            this.render(previous);
+        }
+        this.nextMonth = function(){
+            var next = new Date(this.date.getFullYear(),this.date.getMonth() + 1);
+            this.render(next);
+        }
+        this.getActiveByAttr = function(attr,value){
+            return this.actives.filter(function(active){
+                if(active.hasOwnProperty('attributes')){
+                    if(active.attributes[attr] == value){
+                        return true;
+                    }
+                }
+                return false;
+            }).pop();
+        }
+        this.removeDate = function(date){
+            var options = { year: 'numeric', month: 'numeric', day: 'numeric' };
+
+            // Removendo uma data ativa pelo atributo
+            this.actives = this.actives.filter(function(active){
+                return active.toLocaleDateString('pt-BR', options) != date.toLocaleDateString('pt-BR', options);
+            });
+
+            this.refresh();
+        }
+        this.refresh = function(){
+            this.render(this.date);
+        }
+        this.clear = function(){
+            // Removendo os dias ativos
+            this.actives = new Array();
+
+            this.refresh()
+        }
+        // Eventos
+        var self = this;
+        this.table.querySelector('.previous-month').onclick = function(){
+            self.previousMonth();
+        }
+        this.table.querySelector('.next-month').onclick = function(){
+            self.nextMonth();
+        }
+
+        // Iniciando o calendario
+        this.render(new Date());
+    }
+
+    Schedule = function (calendar) {
+        this.calendar = calendar;
+        this.fetch = function () {
+            return fetch('/api.php');
+        }
+
+        this.add = function (date, title){
+            var params = {};
+
+            params.date = date;
+            params.title = title;
+            params.action = 'add';
+
+            var data = new FormData();
+            data.append( "json", JSON.stringify( params ) );
+
+            return fetch('/api.php', {
+
+                method: 'POST',
+                body: data
+            });
+        }
+
+        this.remove = function (date){
+            var params = {};
+
+            params.date = date;
+            params.action = 'remove';
+
+            var data = new FormData();
+            data.append( "json", JSON.stringify( params ) );
+
+            return fetch('/api.php', {
+                method: 'post',
+                body: data
+            });
+        }
+
+
+        // evento do clique para o dia
+        this.calendar.table.addEventListener('click', event => {
+            if(event.target.nodeName != 'TD'){
+                return;
+            }
+
+            let day = event.target;
+            let date = new Date(day.dataset.date * 1000);
+            let title = prompt('Qual é o evento?', day.dataset.title || '');
+
+            if(title === null){
+                return;
+            }
+
+            // Caso esteja ativado
+            if(day.classList.contains('active')){
+                this.calendar.removeDate(date);
+            }
+
+            date.attributes = {title:title};
+            this.calendar.add(date);
+
+            // Adiciona na agenda
+            this.add(day.dataset.date,title);
+        })
+        this.calendar.table.addEventListener('click', event => {
+            if(event.target.nodeName !== 'SPAN' && event.target.parentNode.nodeName !== 'TD'){
+                return;
+            }
+
+            if(!confirm('Realmente deseja remover o evento?')){
+                return;
+            }
+
+            let date = new Date(event.target.parentNode.dataset.date * 1000);
+            this.calendar.removeDate(date);
+
+            // Remove da agenda
+            this.remove(event.target.parentNode.dataset.date);
+        })
+
+
+    }
+
+    window.onload = function(){
+        calendar = new Calendar;
+        schedule = new Schedule(calendar);
+
+        // Captura os eventos
+        schedule.fetch().then(function(response){
+            response.json().then(function(events){
+                events.forEach(function(event){
+                    var date = new Date(event.timestamp * 1000);
+
+                    // Adicionando atributos para esse dia
+                    date.attributes = {title:event.title};
+
+                    calendar.add(date);
+                })
+            })
+        }).catch(function(){
+            alert('Deu erro');
+        })
+
+    }
+
+
+
+</script>
+</body>
+</html>
