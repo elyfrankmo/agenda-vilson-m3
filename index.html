@@ -1,4 +1,7 @@
 <html>
+<head>
+    <meta charset="UTF-8">
+</head>
 <body>
 <style media="screen">
     table.calendar{
@@ -294,39 +297,58 @@
         this.fetch = function () {
             return fetch('/api.php');
         }
-
-        this.add = function (date, title){
-            var params = {};
-
-            params.date = date;
-            params.title = title;
-            params.action = 'add';
+        this.edit = function (timestamp, title){
 
             var data = new FormData();
-            data.append( "json", JSON.stringify( params ) );
+            data.append('timestamp', timestamp);
+            data.append('title', title);
+            data.append('action', 'update');
 
             return fetch('/api.php', {
-
                 method: 'POST',
                 body: data
+            }).then(() => {
+                var date = new Date(timestamp * 1000);
+                date.attributes = {title:title};
+
+                // Remove do calendário
+                this.calendar.removeDate(date);
+
+                // Adiciona no calendario
+                this.calendar.add(date);
             });
         }
-
-        this.remove = function (date){
-            var params = {};
-
-            params.date = date;
-            params.action = 'remove';
+        this.add = function (timestamp, title){
 
             var data = new FormData();
-            data.append( "json", JSON.stringify( params ) );
+            data.append('timestamp', timestamp);
+            data.append('title', title);
+            data.append('action', 'add');
+
+            return fetch('/api.php', {
+                method: 'POST',
+                body: data
+            }).then(() => {
+                var date = new Date(timestamp * 1000);
+                date.attributes = {title:title};
+
+                // Adiciona no calendario
+                this.calendar.add(date);
+            });
+        }
+        this.remove = function (timestamp){
+            var data = new FormData();
+            data.append('timestamp', timestamp);
+            data.append('action', 'remove');
 
             return fetch('/api.php', {
                 method: 'post',
                 body: data
-            });
+            }).then(() => {
+                var date = new Date(timestamp * 1000);
+                this.calendar.removeDate(date);
+            })
         }
-
 
         // evento do clique para o dia
         this.calendar.table.addEventListener('click', event => {
@@ -335,7 +357,6 @@
             }
 
             let day = event.target;
-            let date = new Date(day.dataset.date * 1000);
             let title = prompt('Qual é o evento?', day.dataset.title || '');
 
             if(title === null){
@@ -344,14 +365,13 @@
 
             // Caso esteja ativado
             if(day.classList.contains('active')){
-                this.calendar.removeDate(date);
+                this.edit(day.dataset.date, title);
+            }else{
+                // Adiciona na agenda
+                this.add(day.dataset.date,title);
             }
 
-            date.attributes = {title:title};
-            this.calendar.add(date);
 
-            // Adiciona na agenda
-            this.add(day.dataset.date,title);
         })
         this.calendar.table.addEventListener('click', event => {
             if(event.target.nodeName !== 'SPAN' && event.target.parentNode.nodeName !== 'TD'){
@@ -361,9 +381,6 @@
             if(!confirm('Realmente deseja remover o evento?')){
                 return;
             }
-
-            let date = new Date(event.target.parentNode.dataset.date * 1000);
-            this.calendar.removeDate(date);
 
             // Remove da agenda
             this.remove(event.target.parentNode.dataset.date);

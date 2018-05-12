@@ -7,6 +7,6 @@ $password = "";
 $conn = new mysqli($servername, $username, $password);
 
 if ($conn->connect_error) {
-    die("Erro de conexão: " . $conn->connect_error);
+    die("Erro de conexÃ£o: " . $conn->connect_error);
 }
 return $conn;

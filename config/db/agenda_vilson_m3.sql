@@ -35,13 +35,6 @@ CREATE TABLE `agenda_vilson_m3.tb_evento` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Extraindo dados da tabela `agenda_vilson_m3.tb_evento`
---
-
-INSERT INTO `agenda_vilson_m3.tb_evento` (`id`, `timestamp`, `title`) VALUES
-(2, 1526191200, 'Dias das Mães');
-
---
 -- Indexes for dumped tables
 --
 
